@@ -380,7 +380,7 @@ export default {
           width: 4,
         },
         title: {
-          text: "Gráfico de Linea",
+          text: "Gráfico",
           align: "left",
           margin: 10,
           offsetX: 2,
