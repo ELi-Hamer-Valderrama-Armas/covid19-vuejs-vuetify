@@ -68,7 +68,7 @@
                       text
                       small
                       target="_blank"
-                      href="https://twitter.com/Eli_ValderramaA"
+                      href="https://www.instagram.com/elivalderramaa/"
                     >
                       <img
                         src="@/assets/Diseño/twitter.png"
