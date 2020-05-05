@@ -49,7 +49,7 @@
                       text
                       small
                       target="_blank"
-                      href="https://www.instagram.com/eli_valderrama_armas/"
+                      href="https://www.instagram.com/elivalderramaa/"
                     >
                       <img
                         src="@/assets/Diseño/instagram.png"
@@ -68,7 +68,7 @@
                       text
                       small
                       target="_blank"
-                      href="https://www.instagram.com/elivalderramaa/"
+                      href="https://twitter.com/Eli_ValderramaA"
                     >
                       <img
                         src="@/assets/Diseño/twitter.png"
