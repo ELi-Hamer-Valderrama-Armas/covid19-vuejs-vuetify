@@ -258,7 +258,7 @@ export default {
       })
         .then((response) => {
           this.todos = response.data.countries_stat;
-
+          
           this.progressBarD = false;
         })
         .catch((error) => {
@@ -294,7 +294,7 @@ export default {
   computed: {
     TodoconIndex() {
       this.getDatosC();
-      this.todos.splice(0, 1);
+      //this.todos.splice(0, 1);
 
       return this.todos.map((todos, index) => ({
         ...todos,
