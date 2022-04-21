@@ -288,8 +288,8 @@
           <v-card class="fondo1 mb-2">
             <div>
               <v-progress-linear
-                slot="progress"
                 v-show="progressBarG"
+                slot="progress"
                 color="yellow"
                 indeterminate
               ></v-progress-linear>
@@ -321,10 +321,8 @@ export default {
       Datos1: [],
       Datos2: [],
       confirmados: [],
-      recuperados: [],
       fallecidos: [],
-      mes: [],
-
+    
       fechas: [],
 
       series: [
@@ -332,10 +330,7 @@ export default {
           name: "Confirmados",
           data: [],
         },
-        {
-          name: "Recuperados",
-          data: [],
-        },
+       
         {
           name: "Fallecidos",
 
@@ -371,7 +366,7 @@ export default {
           },
         },
 
-        colors: ["#78909C", "#F44336", "#00E676"],
+        colors: ["#F1C40F", "#E74C3C"],
         dataLabels: {
           enabled: false,
         },
@@ -442,7 +437,7 @@ export default {
         grid: {
           show: false,
         },
-        colors: ["#78909C", "#F44336", "#00E676"],
+        colors: ["#F1C40F", "#E74C3C"],
         plotOptions: {
           bar: {
             horizontal: false,
@@ -497,8 +492,8 @@ export default {
     };
   },
   methods: {
-    ObtenerPais() {
-      axios({
+    async ObtenerPais() {
+      await axios({
         method: "GET",
         url:
           "https://coronavirus-monitor.p.rapidapi.com/coronavirus/latest_stat_by_iso_alpha_3.php",
@@ -518,21 +513,21 @@ export default {
           for (const i in this.Datos1) {
             this.Datos = this.Datos1[i];
           }
-          this.Datos;
-
-          this.progressBar = false;
         })
         .catch((error) => {
           console.log(error);
+        })
+        .finally(() => {
+          this.progressBar = false;
         });
     },
     getporcentaje(total, activos) {
       var porcentaje = 0;
 
       if (total != null && activos != null && activos != "N/A") {
-        var total = total.replace(",", "");
-        var activos = activos.replace(",", "");
-        var res = (activos * 100) / total;
+        var total = total.replace(/,/g, "");
+        var activos1 = activos.replace(/,/g, "");
+        var res = (activos1 * 100) / total;
         porcentaje = res.toFixed(2);
       }
 
@@ -545,11 +540,11 @@ export default {
 
       return cantidadg;
     },
-    ObtenerPoblacion() {
-      axios({
+    async ObtenerPoblacion() {
+      await axios({
         method: "GET",
         url:
-          "https://restcountries.eu/rest/v2/name/" +
+          "https://restcountries.com/v2/name/" +
           this.$route.params.id +
           "?fullText=true",
       })
@@ -573,69 +568,89 @@ export default {
       var porcentaje = 0;
 
       if (total != null && confirm != null && confirm != "N/A") {
-        confirm = confirm.replace(",", "");
-        var res = (confirm * 100) / total;
+        let confirmar = confirm.replace(/,/g, "");
+
+        var res = (Number(confirmar) * 100) / Number(total);
+
         porcentaje = res.toFixed(3);
       }
 
       return porcentaje;
+
       this.progressBar = false;
     },
-    ObtenerGraficos() {
-      axios({
+    async ObtenerGraficos() {
+      await axios({
         method: "GET",
-        url: "https://coronavirus-info.p.rapidapi.com/historybycountry",
+        url: "https://covid-19-coronavirus-statistics.p.rapidapi.com/v1/stats",
+        params: { country: this.$route.params.id },
         headers: {
-          "content-type": "application/octet-stream",
-          "x-rapidapi-host": "coronavirus-info.p.rapidapi.com",
-          "x-rapidapi-key":
+          "X-RapidAPI-Host": "covid-19-coronavirus-statistics.p.rapidapi.com",
+          "X-RapidAPI-Key":
             "e10ef16238msh53ab6462e7accdcp17ca41jsn01d5d808a35d",
-        },
-        params: {
-          name: this.$route.params.id,
         },
       })
         .then((response) => {
-          this.fechas = response.data.history;
+          this.fechas = response.data.data.covid19Stats;
+          let provincias = [];
+          let totalConfirmados = [];
+          let totalFallecidos = [];
 
-          for (var i in this.fechas) {
-            this.confirmados[i] = this.fechas[i].total_cases;
-            this.recuperados[i] = this.fechas[i].total_recovered;
-            this.fallecidos[i] = this.fechas[i].total_deaths;
-            this.mes[i] = this.fechas[i].date;
-            this.mes[i] = this.mes[i].slice(0, -15);
-          }
+          const datanew = this.fechas.reduce((acumulador, valor) => {
+            const elementoYaExiste = acumulador.find(
+              (elemento) => elemento.province == valor.province
+            );
+
+            if (elementoYaExiste) {
+              return acumulador.map((elemento) => {
+                if (elemento.province === valor.province) {
+                  return {
+                    ...elemento,
+
+                    confirmed: elemento.confirmed + valor.confirmed,
+                    deaths: elemento.deaths + valor.deaths,
+                  };
+                }
+                return elemento;
+              });
+            }
+            return [...acumulador, valor];
+          }, []);
+
+          Object.keys(datanew).forEach((e) => {
+            datanew[e].province != null
+              ? provincias.push(datanew[e].province)
+              : provincias.push(datanew[e].country),
+              totalConfirmados.push(datanew[e].confirmed);
+            totalFallecidos.push(datanew[e].deaths);
+          });
 
           this.series = [
             {
               name: "Confirmados",
-              data: this.confirmados,
+              data: totalConfirmados,
             },
-            { name: "Fallecidos", data: this.fallecidos },
-            {
-              name: "Recuperados",
-              data: this.recuperados,
-            },
+            { name: "Fallecidos", data: totalFallecidos },
           ];
           this.chartOptions1 = {
             xaxis: {
-              categories: this.mes,
+              categories: provincias,
             },
           };
           this.chartOptions = {
             xaxis: {
-              categories: this.mes,
+              categories: provincias,
             },
           };
-          this.progressBarG =false;
         })
         .catch((error) => {
           console.log(error);
+        })
+        .finally(() => {
+          this.progressBarG = false;
         });
     },
   },
-  computed: {},
-
   created() {
     this.ObtenerPais();
     this.ObtenerPoblacion();

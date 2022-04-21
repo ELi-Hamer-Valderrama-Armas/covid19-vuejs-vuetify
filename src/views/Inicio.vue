@@ -1,7 +1,7 @@
 <template>
   <div class="Inicio">
-    <v-container grid-list-md>      
-      <v-layout row wrap >      
+    <v-container grid-list-md>
+      <v-layout row wrap>
         <v-flex xs12 sm4 class="grid-list-md">
           <v-card class="fondo1">
             <div class="">
@@ -153,7 +153,6 @@
             </div>
           </v-card>
         </v-flex>
-
       </v-layout>
       <v-layout row wrap>
         <v-flex xs12 sm12>
@@ -189,20 +188,22 @@
                   color="primary"
                   indeterminate
                 ></v-progress-linear>
-                <template v-slot:item.country_name="{ item }">
+                <template v-slot:item.country="{ item }">
                   <div>
                     <div class="d-flex flex-wrap">
                       <div>
                         <v-img
                           :src="
-                            require(`@/assets/Banderas/${item.country_name}.png`)
+                            require(`@/assets/Banderas/${item.country=='Taiwan*'?'Taiwan':item.country}.png`)
+                          
                           "
+                          :alt="item.country"
                           height="20"
                           width="23"
                         ></v-img>
                       </div>
                       <div class="ml-2">
-                        {{ item.country_name }}
+                        {{ item.country }}
                       </div>
                     </div>
                   </div>
@@ -233,10 +234,10 @@ export default {
         },
         {
           text: "País",
-          value: "country_name",
+          value: "country",
         },
 
-        { text: "Infectados", value: "cases" },
+        { text: "Infectados", value: "confirmed" },
       ],
       todos: [],
       General: [],
@@ -244,29 +245,50 @@ export default {
   },
 
   methods: {
-    getDatosC() {
-      axios({
+    async getDatosC() {
+      await axios({
         method: "GET",
-        url:
-          "https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php",
+
+        url: "https://covid-19-coronavirus-statistics.p.rapidapi.com/v1/stats",
         headers: {
-          "content-type": "application/octet-stream",
-          "x-rapidapi-host": "coronavirus-monitor.p.rapidapi.com",
-          "x-rapidapi-key":
+          "X-RapidAPI-Host": "covid-19-coronavirus-statistics.p.rapidapi.com",
+          "X-RapidAPI-Key":
             "e10ef16238msh53ab6462e7accdcp17ca41jsn01d5d808a35d",
         },
       })
         .then((response) => {
-          this.todos = response.data.countries_stat;
-          
-          this.progressBarD = false;
+          let todos1 = response.data.data.covid19Stats;
+
+          this.todos = todos1.reduce((acumulador, valor) => {
+            const elementoYaExiste = acumulador.find(
+              (elemento) => elemento.country == valor.country
+            );
+
+            if (elementoYaExiste) {
+              return acumulador.map((elemento) => {
+                if (elemento.country === valor.country) {
+                  return {
+                    ...elemento,
+                    country:elemento.country == 'Taiwan*'?'Taiwan':elemento.country,
+                    confirmed: elemento.confirmed + valor.confirmed,
+                    deaths: elemento.deaths + valor.deaths,
+                  };
+                }
+                return elemento;
+              });
+            }
+            return [...acumulador, valor];
+          }, []);
         })
         .catch((error) => {
           console.log(error);
+        })
+        .finally(() => {
+          this.progressBarD = false;
         });
     },
-    getDatosGeneral() {
-      axios({
+    async getDatosGeneral() {
+      await axios({
         method: "GET",
         url:
           "https://coronavirus-monitor.p.rapidapi.com/coronavirus/worldstat.php",
@@ -279,17 +301,17 @@ export default {
       })
         .then((response) => {
           this.General = response;
-
-          this.progressBarC = false;
         })
         .catch((error) => {
           console.log(error);
+        })
+        .finally(() => {
+          this.progressBarC = false;
         });
     },
     ClickTabla(item) {
-      this.$router.push({ name: "Pais", params: { id: item.country_name } });
+      this.$router.push({ name: "Pais", params: { id: item.country } });
     },
-
   },
   computed: {
     TodoconIndex() {
@@ -304,6 +326,7 @@ export default {
   },
   created() {
     this.getDatosGeneral();
+    //this.getDatosC()
   },
 };
 </script>
