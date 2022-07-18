@@ -1,29 +1,23 @@
-# covid19
+# Covid19
+Aplicación informativa sobre los casos del covid19. 
 
-## Project setup
-```
-npm install
-```
+## Tabla de contenido
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+- [Links](#links)
+- [Construcción](#construcción)
+- [Autor](#autor)
 
-### Compiles and minifies for production
-```
-npm run build
-```
+### Link
 
-### Run your tests
-```
-npm run test
-```
+- URL del sitio en vivo: [Heroku](https://covid19-pandemia.herokuapp.com/)
 
-### Lints and fixes files
-```
-npm run lint
-```
+### Construcción
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- Marcado HTML5 semántico
+- [Vuetify](https://vuetifyjs.com/)
+- [Vue.js](https://vuejs.org/) -  Framework de Javascript
+
+## Autor
+
+- Eli valderrama Armas - [@Eli-Hamer](https://www.facebook.com/eli.valderramaarmas)
+
